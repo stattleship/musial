@@ -1,10 +1,39 @@
 function main()  {
   let scorePromise = loadScore()
-  scorePromise.then((score) => {
-    musialGui = new MusialGui({score})
+  let instrumentsPromise = loadInstruments()
+  Promise.all([scorePromise, instrumentsPromise]).then((loadResults) => {
+    let score = loadResults[0]
+    let instruments = loadResults[1]
+    musialGui = new MusialGui({
+      instruments,
+      score
+    })
     document.body.appendChild(musialGui.rootEl)
     musialGui.render()
   })
+}
+
+function loadInstruments() {
+  let instrumentNames = [
+    'celesta',
+    'shamisen'
+  ]
+  let instrumentPromises = []
+  let ac = Tone.context
+  for (let instrumentName of instrumentNames) {
+    let instrumentPromise = Soundfont.instrument(ac, instrumentName)
+    instrumentPromises.push(instrumentPromise)
+  }
+  instrumentsPromise = Promise.all(instrumentPromises).then(instruments => {
+    let keyedInstruments = {}
+    for (let i = 0; i < instruments.length; i++) {
+      let instrument = instruments[i]
+      let instrumentName = instrumentNames[i]
+      keyedInstruments[instrumentName] = instrument
+    }
+    return keyedInstruments
+  })
+  return instrumentsPromise
 }
 
 function loadScore() {
@@ -21,6 +50,7 @@ class MusialGui {
     kwargs = kwargs || {}
     this.rootEl = document.createElement('div')
     this.score = kwargs.score
+    this.instruments = kwargs.instruments
   }
 
   render() {
@@ -33,7 +63,11 @@ class MusialGui {
     button.innerHTML = 'play'
     button.addEventListener('click', () => {
       console.log('play')
-      new ScorePlayer().playScore({score: this.score})
+      new ScorePlayer({
+        instruments: this.instruments,
+      }).playScore({
+        score: this.score
+      })
     })
     return button
   }
@@ -41,6 +75,7 @@ class MusialGui {
 
 class ScorePlayer {
   constructor(kwargs) {
+    this.instruments = kwargs.instruments
   }
 
   genSynth() {
@@ -52,27 +87,55 @@ class ScorePlayer {
     let score = kwargs.score || {}
     let bpm = score.header.bpm || 140
     new Tone.PluckSynth().toMaster();
-    score.tracks.push(score.tracks[0])
-    for (let track of score.tracks) {
+    for (let i = 0; i < score.tracks.length; i++) {
+      let track = score.tracks[i]
+      let instrumentName = Object.keys(this.instruments)[i]
+      let instrument = this.instruments[instrumentName]
       let synth = this.genSynth()
       let notes = track.notes
       notes = notes.slice(0, 10)
       let curTime = 0
-      var renderedTrack = new Tone.Part((time, note) => {
-        let duration = note.duration
-        let noteName = note.note
-        let velocity = note.velocity / 127
-        console.log(curTime, duration, noteName, velocity)
-        synth.triggerAttackRelease(
-          noteName,
+      var renderedTrack = new Tone.Part((time, event) => {
+        let duration = event.duration
+        let noteName = event.note
+        let velocity = event.velocity / 127
+        this.scheduleNote({
           duration,
-          curTime,
-          velocity
-        )
+          instrument,
+          noteName,
+          time: curTime,
+          velocity,
+        })
         curTime += duration
       }, notes).start()
     }
     Tone.Transport.start()
+  }
+
+  scheduleNote(kwargs) {
+    console.log("scheduleNote: ", kwargs)
+    //this.scheduleSynthNote(kwargs)
+    this.scheduleInstrumentNote(kwargs)
+  }
+
+  scheduleSynthNote(kwargs) {
+    synth.triggerAttackRelease(
+      kwargs.noteName,
+      kwargs.duration,
+      kwargs.time,
+      kwargs.velocity
+    )
+  }
+
+  scheduleInstrumentNote(kwargs) {
+    let instrument = kwargs.instrument
+    instrument.play(
+      kwargs.noteName,
+      kwargs.time,
+      {
+        duration: kwargs.duration
+      }
+    )
   }
 }
 
