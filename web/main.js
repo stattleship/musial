@@ -1,7 +1,12 @@
 function main()  {
   let scorePromise = loadScore()
   scorePromise.then((score) => {
-    new ScorePlayer().playScore({score})
+    musialGui = new MusialGui({
+      score,
+      scorePlayer: new ScorePlayer()
+    })
+    document.body.appendChild(musialGui.rootEl)
+    musialGui.render()
   })
 }
 
@@ -12,6 +17,38 @@ function loadScore() {
     return response.json()
   })
   return scorePromise
+}
+
+class MusialGui {
+  constructor (kwargs) {
+    kwargs = kwargs || {}
+    this.rootEl = document.createElement('div')
+    this.score = kwargs.score
+    this.scorePlayer = kwargs.scorePlayer
+  }
+
+  render() {
+    let playButton = this.renderPlayButton()
+    this.rootEl.appendChild(playButton)
+  }
+
+  renderPlayButton() {
+    let button = document.createElement('button')
+    button.innerHTML = 'play'
+    button.addEventListener('click', () => {
+      console.log('play')
+      this.scorePlayer.playScore({score: this.score})
+    })
+    return button
+  }
+
+  renderForm() {
+    let formHtml = `
+    foo
+    cow
+    `
+  }
+
 }
 
 class ScorePlayer {
@@ -28,17 +65,22 @@ class ScorePlayer {
     let score = kwargs.score || {}
     let bpm = score.header.bpm || 140
     for (let track of score.tracks) {
+      let notes = track.notes
+      //notes = notes.slice(0, 10)
       let curTime = 0
       var renderedTrack = new Tone.Part((time, note) => {
+        let duration = note.duration * 1e-3
+        let noteName = note.note
+        let velocity = note.velocity
         this.synth.triggerAttackRelease(
-          note.name,
-          note.duration,
+          noteName,
+          duration,
           curTime,
-          note.velocity
+          velocity
         )
-        console.log(curTime * 1e-3, note)
-        curTime += note.duration
-      }, track.notes).start()
+        console.log(curTime, duration, noteName, velocity)
+        curTime += duration
+      }, notes).start()
     }
     Tone.Transport.start()
   }
