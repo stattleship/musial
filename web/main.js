@@ -54,8 +54,8 @@ class MusialGui {
   }
 
   render() {
-    let playButton = this.renderPlayButton()
-    this.rootEl.appendChild(playButton)
+    this.rootEl.appendChild(this.renderPlayButton())
+    this.rootEl.appendChild(this.renderPitchBox())
   }
 
   renderPlayButton() {
@@ -70,6 +70,45 @@ class MusialGui {
       })
     })
     return button
+  }
+
+  renderPitchBox() {
+    let pitchBox = document.createElement('div')
+    pitchBox.id = 'pitchBox'
+    pitchBox.innerHTML = `
+    <table>
+      <tr>
+        <td class="left">${this.genPitchZoneHtml({zone: 13})}</td>
+        <td class="middle">
+          <table>
+            <tr><td class="top">${this.genPitchZoneHtml({zone: 10})}</td></tr>
+            <tr><td>${this.genStrikeZoneTableHtml()}</td></tr>
+            <tr><td class="bottom">${this.genPitchZoneHtml({zone: 12})}</td></tr>
+          </table>
+        </td>
+        <td class="right">${this.genPitchZoneHtml({zone: 11})}</td>
+    </tr></table>
+    `
+    return pitchBox
+  }
+
+  genPitchZoneHtml (kwargs) {
+    return `<div id="zone zone-${kwargs.zone}">zone-${kwargs.zone}</div>`
+  }
+
+  genStrikeZoneTableHtml () {
+    let table = document.createElement('table')
+    let tr
+    for (let i = 0; i < 9; i++) {
+      if ((i % 3) == 0) {
+        tr = document.createElement('tr')
+        table.appendChild(tr)
+      }
+      let td = document.createElement('td')
+      tr.appendChild(td)
+      td.innerHTML = this.genPitchZoneHtml({zone: i + 1})
+    }
+    return `<table class="strike-zone-table">${table.innerHTML}</table>`
   }
 }
 
