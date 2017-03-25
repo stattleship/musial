@@ -35,17 +35,44 @@ module Musial
              }
 
     tone_js['header'] = header
+    tone_js['tracks'] = []
 
-    notes = []
+    track_1_notes = []
+    track_2_notes = []
 
     controlChanges = {}
 
+    track_1 = {
+                  'id' => 1,
+                  'name' => 'top of inning',
+                  'notes' => track_1_notes,
+                  'startTime' => 0,
+                  'duration' => 1,
+                  'controlChanges' => {},
+                  'isPercussion' => false,
+                  'channelNumber' => 1,
+                  'instrumentNumber' => 10,
+                  'instrument' => GM_PATCH_NAMES[10],
+                }
+
+    track_2 = {
+                  'id' => 2,
+                  'name' => 'bottom of inning',
+                  'notes' => track_2_notes,
+                  'startTime' => 0,
+                  'duration' => 1,
+                  'controlChanges' => {},
+                  'isPercussion' => false,
+                  'channelNumber' => 1,
+                  'instrumentNumber' => 32,
+                  'instrument' => GM_PATCH_NAMES[32],
+                }
 
     pitches.each do |pitch|
 
       next unless pitch.pitch_speed > 0 && pitch.pitch_speed < 106
 
-      duration = seq.note_to_length('quarter')
+      duration = seq.note_to_length('eighth')
 
       note_event = NoteEvent.new(0,
                                  0,
@@ -63,28 +90,18 @@ module Musial
                 'meta' => pitch.dump,
               }
 
-      notes << note
-
+      if pitch.half == 'T'
+        track_1_notes << note
+      else
+        track_2_notes << note
+      end
     end
 
-    instrument_number = 0
+    track_1['notes'] = track_1_notes
+    track_2['notes'] = track_2_notes
 
-    track = {
-              'id' => 1,
-              'name' => 'name',
-              'notes' => notes,
-              'startTime' => 0,
-              'duration' => 1,
-              'controlChanges' => {},
-              'isPercussion' => false,
-              'channelNumber' => 1,
-              'instrumentNumber' => instrument_number,
-              'instrument' => GM_PATCH_NAMES[instrument_number],
-            }
-
-    tone_js['tracks'] = []
-
-    tone_js['tracks'] << track
+    tone_js['tracks'] << track_1
+    tone_js['tracks'] << track_2
 
     File.write("../web/songs/#{game_id}_song.json", Oj.dump(tone_js, mode: :compat))
 
