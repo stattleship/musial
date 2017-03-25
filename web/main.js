@@ -1,6 +1,17 @@
 function main()  {
-  let score = loadScore()
-  new ScorePlayer().playScore({score})
+  let scorePromise = loadScore()
+  scorePromise.then((score) => {
+    new ScorePlayer().playScore({score})
+  })
+}
+
+function loadScore() {
+  //let score = genScore()
+  let songUrl = 'songs/mlb-2017-mil-sf-2017-03-19-1605_song.json'
+  let scorePromise = fetch(songUrl).then((response) => {
+    return response.json()
+  })
+  return scorePromise
 }
 
 class ScorePlayer {
@@ -15,25 +26,22 @@ class ScorePlayer {
 
   playScore(kwargs) {
     let score = kwargs.score || {}
-    let bpm = score.bpm || 140
+    let bpm = score.header.bpm || 140
     for (let track of score.tracks) {
+      let curTime = 0
       var renderedTrack = new Tone.Part((time, note) => {
         this.synth.triggerAttackRelease(
           note.name,
           note.duration,
-          time,
+          curTime,
           note.velocity
         )
+        console.log(curTime * 1e-3, note)
+        curTime += note.duration
       }, track.notes).start()
     }
     Tone.Transport.start()
   }
-}
-
-
-function loadScore() {
-  let score = genScore()
-  return score
 }
 
 function genScore(kwargs) {
