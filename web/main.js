@@ -8,7 +8,8 @@ function main()  {
       instruments,
       score
     })
-    document.body.appendChild(musialGui.rootEl)
+    let mainContainer = document.getElementById('main-container')
+    mainContainer.appendChild(musialGui.rootEl)
     musialGui.render()
   })
 }
@@ -66,7 +67,8 @@ class MusialGui {
 
   renderTrackName() {
     let trackEl = document.createElement('div')
-    trackEl.innerHTML = `Track: this.score.tracks[0].name`
+    trackEl.classList.add('track-name')
+    trackEl.innerHTML = `Track: ${this.score.tracks[0].name}`
     return trackEl
   }
 
@@ -106,7 +108,7 @@ class MusialGui {
   }
 
   genPitchZoneHtml (kwargs) {
-    return `<div class="zone" id="zone-${kwargs.zone}">zone-${kwargs.zone}</div>`
+    return `<div class="zone" id="zone-${kwargs.zone}">${kwargs.zone}</div>`
   }
 
   genStrikeZoneTableHtml () {
