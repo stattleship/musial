@@ -5,7 +5,7 @@ describe Musial do
     expect(Musial::VERSION).not_to be nil
   end
 
-  it 'fetches pitches' do
-      ap Musial.perform
+  it 'makes world series songs' do
+    ap Musial.perform
   end
 end
