@@ -36,5 +36,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'activesupport', '~> 5.0', '>= 5.0.2'
   spec.add_runtime_dependency 'awesome_print', '~> 1.7'
+  spec.add_runtime_dependency 'midilib', '~> 2.0', '>= 2.0.5'
   spec.add_runtime_dependency 'stattleship-ruby', '~> 0.1.26'
 end
