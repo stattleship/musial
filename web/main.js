@@ -1,10 +1,7 @@
 function main()  {
   let scorePromise = loadScore()
   scorePromise.then((score) => {
-    musialGui = new MusialGui({
-      score,
-      scorePlayer: new ScorePlayer()
-    })
+    musialGui = new MusialGui({score})
     document.body.appendChild(musialGui.rootEl)
     musialGui.render()
   })
@@ -24,7 +21,6 @@ class MusialGui {
     kwargs = kwargs || {}
     this.rootEl = document.createElement('div')
     this.score = kwargs.score
-    this.scorePlayer = kwargs.scorePlayer
   }
 
   render() {
@@ -37,48 +33,42 @@ class MusialGui {
     button.innerHTML = 'play'
     button.addEventListener('click', () => {
       console.log('play')
-      this.scorePlayer.playScore({score: this.score})
+      new ScorePlayer().playScore({score: this.score})
     })
     return button
   }
-
-  renderForm() {
-    let formHtml = `
-    foo
-    cow
-    `
-  }
-
 }
 
 class ScorePlayer {
   constructor(kwargs) {
-    this.synth = this.genSynth()
   }
 
   genSynth() {
-    let synth = new Tone.PolySynth(8).toMaster()
+    let synth = new Tone.FMSynth().toMaster();
     return synth
   }
 
   playScore(kwargs) {
     let score = kwargs.score || {}
     let bpm = score.header.bpm || 140
+    new Tone.PluckSynth().toMaster();
+    score.tracks.push(score.tracks[0])
     for (let track of score.tracks) {
+      let synth = this.genSynth()
       let notes = track.notes
-      //notes = notes.slice(0, 10)
+      notes = notes.slice(0, 10)
       let curTime = 0
       var renderedTrack = new Tone.Part((time, note) => {
-        let duration = note.duration * 1e-3
+        let duration = note.duration
         let noteName = note.note
-        let velocity = note.velocity
-        this.synth.triggerAttackRelease(
+        let velocity = note.velocity / 127
+        console.log(curTime, duration, noteName, velocity)
+        synth.triggerAttackRelease(
           noteName,
           duration,
           curTime,
           velocity
         )
-        console.log(curTime, duration, noteName, velocity)
         curTime += duration
       }, notes).start()
     }
