@@ -65,6 +65,7 @@ class MusialGui {
       console.log('play')
       new ScorePlayer({
         instruments: this.instruments,
+        onPlayNote: this.onPlayNote.bind(this),
       }).playScore({
         score: this.score
       })
@@ -93,7 +94,7 @@ class MusialGui {
   }
 
   genPitchZoneHtml (kwargs) {
-    return `<div id="zone zone-${kwargs.zone}">zone-${kwargs.zone}</div>`
+    return `<div class="zone" id="zone-${kwargs.zone}">zone-${kwargs.zone}</div>`
   }
 
   genStrikeZoneTableHtml () {
@@ -110,11 +111,29 @@ class MusialGui {
     }
     return `<table class="strike-zone-table">${table.innerHTML}</table>`
   }
+
+  onPlayNote (kwargs) {
+    let note = kwargs.note
+    let pitchZone = note.meta.pitch_zone
+    this.highlightPitchZone({pitchZone})
+  }
+
+  highlightPitchZone (kwargs) {
+    let {pitchZone} = kwargs
+    let pitchZoneEl = document.getElementById(`zone-${pitchZone}`)
+    let deactivationDelay = 100
+    pitchZoneEl.classList.add('highlight')
+    setTimeout(() => {
+      pitchZoneEl.classList.remove('highlight')
+    }, deactivationDelay)
+  }
+
 }
 
 class ScorePlayer {
   constructor(kwargs) {
     this.instruments = kwargs.instruments
+    this.onPlayNote = kwargs.onPlayNote
   }
 
   genSynth() {
@@ -126,18 +145,20 @@ class ScorePlayer {
     let score = kwargs.score || {}
     let bpm = score.header.bpm || 140
     new Tone.PluckSynth().toMaster();
-    for (let i = 0; i < score.tracks.length; i++) {
+    let tracks = [score.tracks[0]]
+    for (let i = 0; i < tracks.length; i++) {
       let track = score.tracks[i]
       let instrumentName = Object.keys(this.instruments)[i]
       let instrument = this.instruments[instrumentName]
       let synth = this.genSynth()
       let notes = track.notes
-      notes = notes.slice(0, 10)
+      //notes = notes.slice(0, 10)
       let curTime = 0
       var renderedTrack = new Tone.Part((time, event) => {
         let duration = event.duration
         let noteName = event.note
         let velocity = event.velocity / 127
+        let pitchZone = event.meta.pitch_zone
         this.scheduleNote({
           duration,
           instrument,
@@ -145,6 +166,11 @@ class ScorePlayer {
           time: curTime,
           velocity,
         })
+
+        Tone.Draw.schedule(() => {
+          this.onPlayNote({note: event})
+        }, curTime)
+
         curTime += duration
       }, notes).start()
     }
