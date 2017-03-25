@@ -16,7 +16,6 @@ function main()  {
 function loadInstruments() {
   let instrumentNames = [
     'celesta',
-    'shamisen'
   ]
   let instrumentPromises = []
   let ac = Tone.context
@@ -38,7 +37,7 @@ function loadInstruments() {
 
 function loadScore() {
   //let score = genScore()
-  let songUrl = 'songs/mlb-2017-mil-sf-2017-03-19-1605_song.json'
+  let songUrl = 'songs/mlb-2016-chc-cle-2016-11-2-0400_song.json'
   let scorePromise = fetch(songUrl).then((response) => {
     return response.json()
   })
@@ -54,8 +53,21 @@ class MusialGui {
   }
 
   render() {
+    this.setTitle()
     this.rootEl.appendChild(this.renderPlayButton())
     this.rootEl.appendChild(this.renderPitchBox())
+    this.rootEl.appendChild(this.renderTrackName())
+  }
+
+  setTitle() {
+    let titleEl = document.getElementById('title')
+    titleEl.innerHTML = this.score.header.name
+  }
+
+  renderTrackName() {
+    let trackEl = document.createElement('div')
+    trackEl.innerHTML = `Track: this.score.tracks[0].name`
+    return trackEl
   }
 
   renderPlayButton() {
