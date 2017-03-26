@@ -164,9 +164,9 @@ class MusialGui {
     let note = kwargs.note
     let pitchZone = note.meta.pitch_zone
 
-    let pitchInfo = `Pitch ${note.meta.pitch_count}: ${note.meta.description}`
+    let pitchInfo = `Pitch ${note.meta.pitch_count}: ${note.meta.pitch_description}`
 
-    let trackName = `${note.meta.pitcher_name} - ${note.meta.inning_label}`
+    let trackName = `${note.meta.inning_label} - ${note.meta.team_name} - ${note.meta.pitcher_name}`
     this.genPitchInfo({pitchInfo})
 
     this.genTrackName({trackName})
@@ -208,7 +208,7 @@ class MusialGui {
   genTrackName (kwargs) {
     let trackNameEl = document.getElementById('trackName')
     let {trackName} = kwargs
-    trackNameEl.innerHTML = `Track: ${this.score.tracks[this.trackNumber].name} Pitching - ${trackName}`
+    trackNameEl.innerHTML = `Track: ${this.score.tracks[this.trackNumber].name} - ${trackName}`
   }
 
 }

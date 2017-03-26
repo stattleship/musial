@@ -60,12 +60,13 @@ module Musial
 
       track_1_notes = []
       track_2_notes = []
+      track_3_notes = []
 
       controlChanges = {}
 
       track_1 = {
                     'id' => 1,
-                    'name' => game.away_team_name,
+                    'name' => game.name,
                     'notes' => track_1_notes,
                     'startTime' => 0,
                     'duration' => 1,
@@ -78,8 +79,21 @@ module Musial
 
       track_2 = {
                     'id' => 2,
-                    'name' => game.home_team_nam,
+                    'name' => game.away_team_name,
                     'notes' => track_2_notes,
+                    'startTime' => 0,
+                    'duration' => 1,
+                    'controlChanges' => {},
+                    'isPercussion' => false,
+                    'channelNumber' => 1,
+                    'instrumentNumber' => 32,
+                    'instrument' => GM_PATCH_NAMES[32],
+                  }
+
+      track_3 = {
+                    'id' => 3,
+                    'name' => game.home_team_name,
+                    'notes' => track_3_notes,
                     'startTime' => 0,
                     'duration' => 1,
                     'controlChanges' => {},
@@ -143,21 +157,25 @@ module Musial
                   'note' => note_event.note_to_s,
                   'velocity' => note_event.velocity,
                   'duration' => duration,
-                  'meta' => pitch.dump.merge(description: pitch.to_sentence),
+                  'meta' => pitch.dump,
                 }
 
+        track_1_notes << note
+
         if pitch.half == 'T'
-          track_1_notes << note
-        else
           track_2_notes << note
+        else
+          track_3_notes << note
         end
       end
 
       track_1['notes'] = track_1_notes
       track_2['notes'] = track_2_notes
+      track_3['notes'] = track_3_notes
 
       tone_js['tracks'] << track_1
       tone_js['tracks'] << track_2
+      tone_js['tracks'] << track_3
 
       File.write("../web/songs/#{game.slug}_song.json", Oj.dump(tone_js, mode: :compat))
     end
