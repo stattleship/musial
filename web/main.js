@@ -4,7 +4,7 @@ function main()  {
   Promise.all([scorePromise, instrumentsPromise]).then((loadResults) => {
     let score = loadResults[0]
     let instruments = loadResults[1]
-    let trackNumber = 0
+    let trackNumber = getParameterByName('track') || 0
     musialGui = new MusialGui({
       instruments,
       score,
@@ -18,9 +18,9 @@ function main()  {
 
 function loadInstruments() {
   let instrumentNames = [
-    // 'voice_oohs',
-    // 'melodic_tom',
     'pad_3_polysynth',
+    'voice_oohs',
+    'melodic_tom',
   ]
   let instrumentPromises = []
   let ac = Tone.context
@@ -74,9 +74,9 @@ class MusialGui {
 
   render() {
     this.setTitle()
+    this.rootEl.appendChild(this.renderTrackName())
     this.rootEl.appendChild(this.renderPlayButton())
     this.rootEl.appendChild(this.renderPitchBox())
-    this.rootEl.appendChild(this.renderTrackName())
     this.rootEl.appendChild(this.renderPitchInfo())
   }
 
@@ -97,7 +97,7 @@ class MusialGui {
     let pitchInfoEl = document.createElement('div')
     pitchInfoEl.id = 'pitchInfo'
     pitchInfoEl.classList.add('pitch-info')
-    pitchInfoEl.innerHTML = 'Pitch: '
+    pitchInfoEl.innerHTML = ''
     return pitchInfoEl
   }
 
@@ -112,6 +112,7 @@ class MusialGui {
         new ScorePlayer({
           instruments: this.instruments,
           onPlayNote: this.onPlayNote.bind(this),
+          trackNumber: this.trackNumber,
         }).playScore({
           score: this.score
         })
@@ -217,12 +218,13 @@ class ScorePlayer {
   constructor(kwargs) {
     this.instruments = kwargs.instruments
     this.onPlayNote = kwargs.onPlayNote
+    this.trackNumber = kwargs.trackNumber
   }
 
-  genSynth() {
-    let synth = new Tone.FMSynth().toMaster();
-    return synth
-  }
+  // genSynth() {
+  //   let synth = new Tone.FMSynth().toMaster();
+  //   return synth
+  // }
 
   playScore(kwargs) {
     console.log(Tone.Transport.state)
@@ -230,10 +232,12 @@ class ScorePlayer {
     let bpm = score.header.bpm || 140
     let tracks = [score.tracks[this.trackNumber]]
     for (let i = 0; i < tracks.length; i++) {
-      let track = score.tracks[i]
-      let instrumentName = Object.keys(this.instruments)[i]
+      let track = score.tracks[this.trackNumber]
+      console.log(this.trackNumber)
+      console.log(this.instruments)
+      let instrumentName = Object.keys(this.instruments)[this.trackNumber]
       let instrument = this.instruments[instrumentName]
-      let synth = this.genSynth()
+      // let synth = this.genSynth()
       let notes = track.notes
       //notes = notes.slice(0, 10)
       let curTime = 0

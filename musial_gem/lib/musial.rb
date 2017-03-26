@@ -79,7 +79,7 @@ module Musial
 
       track_2 = {
                     'id' => 2,
-                    'name' => game.away_team_name,
+                    'name' => "#{game.home_team_name} Pitching",
                     'notes' => track_2_notes,
                     'startTime' => 0,
                     'duration' => 1,
@@ -92,7 +92,7 @@ module Musial
 
       track_3 = {
                     'id' => 3,
-                    'name' => game.home_team_name,
+                    'name' => "#{game.away_team_name} Pitching",
                     'notes' => track_3_notes,
                     'startTime' => 0,
                     'duration' => 1,
