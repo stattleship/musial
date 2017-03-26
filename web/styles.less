@@ -1,20 +1,47 @@
-.track-name {
+body {
+  color: HSL(215, 14%, 34%);
+  font-family: 'Baloo Bhaina';
+  background-color: HSL(0, 0%, 97%);
+}
+
+a {
+  color: HSL(114, 100%, 41%);
+}
+
+.pitch-info {
+  color: HSL(215, 14%, 34%);;
+  font-size: 14pt;
+  min-height: 24pt;
+  text-align: left;
+}
+
+.pitch-info.highlight {
   font-size: 16pt;
 }
 
+.track-name {
+  font-size: 14pt;
+  font-weight: bold;
+  text-align: left;
+}
+
 #playButton {
-  margin: 10px;
+  background-color: HSL(114, 100%, 41%);
+  color: white;
+  font-size: 18px;
+  padding: 8px;
 }
 
 #pitchBox {
   width: 400px;
   height: 400px;
-  border: thin solid hsla(0, 0%, 0%, .5);
+  border: thin solid HSL(215, 14%, 34%);
+  border-collapse: collapse;
   margin-bottom: 20px;
   margin-top: 20px;
 
   td {
-    border: thin solid hsla(0, 0%, 0%, .7);
+    border: thin solid HSL(215, 14%, 34%);
   }
 
   .zone {
@@ -28,14 +55,15 @@
   }
 
   .zone.highlight {
-    background: red;
+    background: hsl(341, 98%, 53%);
   }
 
-  .strike-zone-table .zone.highlight{
-    background: green;
+  .strike-zone-table .zone.highlight {
+    background: hsl(152, 100%, 50%);
   }
 
   > table {
+    border-collapse: collapse;
     height: 100%;
     width: 100%;
   }

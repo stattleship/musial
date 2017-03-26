@@ -16,7 +16,9 @@ function main()  {
 
 function loadInstruments() {
   let instrumentNames = [
-    'voice_oohs',
+    // 'voice_oohs',
+    // 'melodic_tom',
+    'pad_3_polysynth',
   ]
   let instrumentPromises = []
   let ac = Tone.context
@@ -81,6 +83,7 @@ class MusialGui {
 
   renderTrackName() {
     let trackEl = document.createElement('div')
+    trackEl.id = 'trackName'
     trackEl.classList.add('track-name')
     trackEl.innerHTML = `Track: ${this.score.tracks[0].name}`
     return trackEl
@@ -154,8 +157,12 @@ class MusialGui {
     let pitchZone = note.meta.pitch_zone
     this.highlightPitchZone({pitchZone})
 
-    let pitchInfo = `${note.meta.pitcher_name} - ${note.meta.inning_label} - Pitch ${note.meta.pitch_count}: ${note.meta.description}`
+    let pitchInfo = `Pitch ${note.meta.pitch_count}: ${note.meta.description}`
+
+    let trackName = `${note.meta.pitcher_name} - ${note.meta.inning_label}`
     this.genPitchInfo({pitchInfo})
+
+    this.genTrackName({trackName})
   }
 
   highlightPitchZone (kwargs) {
@@ -163,15 +170,31 @@ class MusialGui {
     let pitchZoneEl = document.getElementById(`zone-${pitchZone}`)
     let deactivationDelay = 100
     pitchZoneEl.classList.add('highlight')
+
+    let pitchInfoEl = document.getElementById('pitchInfo')
+    pitchInfoEl.classList.add('highlight')
+
     setTimeout(() => {
       pitchZoneEl.classList.remove('highlight')
+      pitchInfoEl.classList.remove('highlight')
     }, deactivationDelay)
+
+    setTimeout(() => {
+      pitchInfoEl.classList.remove('highlight')
+    }, deactivationDelay * 2)
+
   }
 
   genPitchInfo (kwargs) {
     let pitchInfoEl = document.getElementById('pitchInfo')
     let {pitchInfo} = kwargs
     pitchInfoEl.innerHTML = `${pitchInfo}`
+  }
+
+  genTrackName (kwargs) {
+    let trackNameEl = document.getElementById('trackName')
+    let {trackName} = kwargs
+    trackNameEl.innerHTML = `Track: ${this.score.tracks[0].name} Pitching - ${trackName}`
   }
 
 }
