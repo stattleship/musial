@@ -38,6 +38,8 @@ module Musial
 
       pitches = Stattleship::Pitches.fetch(params: pitch_query_params)
 
+      pitches.sort! { |a,b| b.pitched_at <=> a.pitched_at }
+
       seq = Sequence.new()
 
       tone_js = {}
@@ -137,7 +139,7 @@ module Musial
                   'note' => note_event.note_to_s,
                   'velocity' => note_event.velocity,
                   'duration' => duration,
-                  'meta' => pitch.dump,
+                  'meta' => pitch.dump.merge(description: pitch.to_sentence),
                 }
 
         if pitch.half == 'T'

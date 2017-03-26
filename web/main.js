@@ -38,7 +38,7 @@ function loadInstruments() {
 
 function loadScore() {
   //let score = genScore()
-  let songUrl = 'songs/mlb-2016-chc-cle-2016-11-2-0400_song.json'
+  let songUrl = 'songs/mlb-2016-chc-cle-2016-11-1-0400_song.json'
   let scorePromise = fetch(songUrl).then((response) => {
     return response.json()
   })
@@ -58,6 +58,7 @@ class MusialGui {
     this.rootEl.appendChild(this.renderPlayButton())
     this.rootEl.appendChild(this.renderPitchBox())
     this.rootEl.appendChild(this.renderTrackName())
+    this.rootEl.appendChild(this.renderPitchInfo())
   }
 
   setTitle() {
@@ -72,9 +73,18 @@ class MusialGui {
     return trackEl
   }
 
+  renderPitchInfo() {
+    let pitchInfoEl = document.createElement('div')
+    pitchInfoEl.id = 'pitchInfo'
+    pitchInfoEl.classList.add('pitch-info')
+    pitchInfoEl.innerHTML = 'Pitch: '
+    return pitchInfoEl
+  }
+
   renderPlayButton() {
     let button = document.createElement('button')
-    button.innerHTML = 'play'
+    button.id = 'playButton'
+    button.innerHTML = 'Play'
     button.addEventListener('click', () => {
       console.log('play')
       new ScorePlayer({
@@ -108,7 +118,7 @@ class MusialGui {
   }
 
   genPitchZoneHtml (kwargs) {
-    return `<div class="zone" id="zone-${kwargs.zone}">${kwargs.zone}</div>`
+    return `<div class="zone" id="zone-${kwargs.zone}">&nbsp;</div>`
   }
 
   genStrikeZoneTableHtml () {
@@ -130,6 +140,9 @@ class MusialGui {
     let note = kwargs.note
     let pitchZone = note.meta.pitch_zone
     this.highlightPitchZone({pitchZone})
+
+    let pitchInfo = `${note.meta.pitcher_name} - ${note.meta.inning_label} - Pitch ${note.meta.pitch_count}: ${note.meta.description}`
+    this.genPitchInfo({pitchInfo})
   }
 
   highlightPitchZone (kwargs) {
@@ -140,6 +153,12 @@ class MusialGui {
     setTimeout(() => {
       pitchZoneEl.classList.remove('highlight')
     }, deactivationDelay)
+  }
+
+  genPitchInfo (kwargs) {
+    let pitchInfoEl = document.getElementById('pitchInfo')
+    let {pitchInfo} = kwargs
+    pitchInfoEl.innerHTML = `${pitchInfo}`
   }
 
 }
