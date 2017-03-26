@@ -4,9 +4,11 @@ function main()  {
   Promise.all([scorePromise, instrumentsPromise]).then((loadResults) => {
     let score = loadResults[0]
     let instruments = loadResults[1]
+    let trackNumber = 0
     musialGui = new MusialGui({
       instruments,
-      score
+      score,
+      trackNumber
     })
     let mainContainer = document.getElementById('main-container')
     mainContainer.appendChild(musialGui.rootEl)
@@ -66,6 +68,8 @@ class MusialGui {
     this.rootEl = document.createElement('div')
     this.score = kwargs.score
     this.instruments = kwargs.instruments
+    this.trackNumber = kwargs.trackNumber
+
   }
 
   render() {
@@ -85,7 +89,7 @@ class MusialGui {
     let trackEl = document.createElement('div')
     trackEl.id = 'trackName'
     trackEl.classList.add('track-name')
-    trackEl.innerHTML = `Track: ${this.score.tracks[0].name}`
+    trackEl.innerHTML = `Track: ${this.score.tracks[this.trackNumber].name}`
     return trackEl
   }
 
@@ -102,13 +106,16 @@ class MusialGui {
     button.id = 'playButton'
     button.innerHTML = 'Play'
     button.addEventListener('click', () => {
-      console.log('play')
-      new ScorePlayer({
-        instruments: this.instruments,
-        onPlayNote: this.onPlayNote.bind(this),
-      }).playScore({
-        score: this.score
-      })
+      console.log('play ball!')
+
+      if (Tone.Transport.state != 'started') {
+        new ScorePlayer({
+          instruments: this.instruments,
+          onPlayNote: this.onPlayNote.bind(this),
+        }).playScore({
+          score: this.score
+        })
+      }
     })
     return button
   }
@@ -153,9 +160,9 @@ class MusialGui {
   }
 
   onPlayNote (kwargs) {
+
     let note = kwargs.note
     let pitchZone = note.meta.pitch_zone
-    this.highlightPitchZone({pitchZone})
 
     let pitchInfo = `Pitch ${note.meta.pitch_count}: ${note.meta.description}`
 
@@ -163,6 +170,10 @@ class MusialGui {
     this.genPitchInfo({pitchInfo})
 
     this.genTrackName({trackName})
+
+    this.highlightPitchZone({pitchZone})
+
+
   }
 
   highlightPitchZone (kwargs) {
@@ -174,13 +185,16 @@ class MusialGui {
     let pitchInfoEl = document.getElementById('pitchInfo')
     pitchInfoEl.classList.add('highlight')
 
+    // let trackNameEl = document.getElementById('trackName')
+    // trackNameEl.classList.add('highlight')
+
     setTimeout(() => {
       pitchZoneEl.classList.remove('highlight')
-      pitchInfoEl.classList.remove('highlight')
     }, deactivationDelay)
 
     setTimeout(() => {
       pitchInfoEl.classList.remove('highlight')
+      // trackNameEl.classList.remove('highlight')
     }, deactivationDelay * 2)
 
   }
@@ -194,7 +208,7 @@ class MusialGui {
   genTrackName (kwargs) {
     let trackNameEl = document.getElementById('trackName')
     let {trackName} = kwargs
-    trackNameEl.innerHTML = `Track: ${this.score.tracks[0].name} Pitching - ${trackName}`
+    trackNameEl.innerHTML = `Track: ${this.score.tracks[this.trackNumber].name} Pitching - ${trackName}`
   }
 
 }
@@ -211,10 +225,10 @@ class ScorePlayer {
   }
 
   playScore(kwargs) {
+    console.log(Tone.Transport.state)
     let score = kwargs.score || {}
     let bpm = score.header.bpm || 140
-    new Tone.PluckSynth().toMaster();
-    let tracks = [score.tracks[0]]
+    let tracks = [score.tracks[this.trackNumber]]
     for (let i = 0; i < tracks.length; i++) {
       let track = score.tracks[i]
       let instrumentName = Object.keys(this.instruments)[i]
@@ -273,73 +287,73 @@ class ScorePlayer {
   }
 }
 
-function genScore(kwargs) {
-  kwargs = kwargs || {}
-  numNotes = kwargs.numNotes || 3
-  let score = {
-    header: {
-      bpm: 120,
-    },
-    tracks: [
-      {
-        startTime: 0,
-        duration: 127.28854166666662,
-        length: 147,
-        id: 1,
-        name: "Bass",
-        instrumentNumber: 33,
-        instrument: "electric bass (finger)",
-        instrumentFamily: "bass",
-        channelNumber: 0,
-        isPercussion: false,
-        notes: genNotes({numNotes}),
-      }
-    ]
-  }
-  return score
-}
+// function genScore(kwargs) {
+//   kwargs = kwargs || {}
+//   numNotes = kwargs.numNotes || 3
+//   let score = {
+//     header: {
+//       bpm: 120,
+//     },
+//     tracks: [
+//       {
+//         startTime: 0,
+//         duration: 127.28854166666662,
+//         length: 147,
+//         id: 1,
+//         name: "Bass",
+//         instrumentNumber: 33,
+//         instrument: "electric bass (finger)",
+//         instrumentFamily: "bass",
+//         channelNumber: 0,
+//         isPercussion: false,
+//         notes: genNotes({numNotes}),
+//       }
+//     ]
+//   }
+//   return score
+// }
 
-function genNotes(kwargs) {
-  kwargs = kwargs || {}
-  let curTime = kwargs.startTime || 0
-  let numNotes = kwargs.numNotes || 3
-  let noteDuration = kwargs.noteDuration || 0.25
-  notes = []
-  for (let i = 0; i < numNotes; i++) {
-    note = genNote({
-      time: curTime,
-      duration: noteDuration
-    })
-    notes.push(note)
-    curTime += noteDuration
-  }
-  return notes
-}
+// function genNotes(kwargs) {
+//   kwargs = kwargs || {}
+//   let curTime = kwargs.startTime || 0
+//   let numNotes = kwargs.numNotes || 3
+//   let noteDuration = kwargs.noteDuration || 0.25
+//   notes = []
+//   for (let i = 0; i < numNotes; i++) {
+//     note = genNote({
+//       time: curTime,
+//       duration: noteDuration
+//     })
+//     notes.push(note)
+//     curTime += noteDuration
+//   }
+//   return notes
+// }
 
-function genNote(kwargs) {
-  let {time, duration} = kwargs
-  let note = {
-    "name": genRandomNoteName(),
-    "midi": null,
-    "time": 0,
-    "velocity": 0.6141732283464567,
-    "duration": duration,
-  }
-  return note
-}
+// function genNote(kwargs) {
+//   let {time, duration} = kwargs
+//   let note = {
+//     "name": genRandomNoteName(),
+//     "midi": null,
+//     "time": 0,
+//     "velocity": 0.6141732283464567,
+//     "duration": duration,
+//   }
+//   return note
+// }
 
-function genRandomNoteName() {
-  let LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
-  let octave = 4
-  let noteLetter = LETTERS[randomInt({max: LETTERS.length})]
-  let noteName = [noteLetter, octave].join('')
-  return noteName
-}
+// function genRandomNoteName() {
+//   let LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+//   let octave = 4
+//   let noteLetter = LETTERS[randomInt({max: LETTERS.length})]
+//   let noteName = [noteLetter, octave].join('')
+//   return noteName
+// }
 
-function randomInt(kwargs) {
-  let max = kwargs.max
-  let min = kwargs.min || 0
-  return Math.floor(Math.random() * (max - min)) + min;
-}
+// function randomInt(kwargs) {
+//   let max = kwargs.max
+//   let min = kwargs.min || 0
+//   return Math.floor(Math.random() * (max - min)) + min;
+// }
 
 main()

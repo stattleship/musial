@@ -26,9 +26,13 @@ module Musial
     # fetch will automatically traverse the paginated response links
     games = Stattleship::BaseballGames.fetch(params: query_params)
 
+    playlist = []
+
     games.each do |game|
 
       ap game.slug
+
+      playlist << { name: game.name, src: "#{game.slug}_song.json" }
 
       pitch_query_params = Stattleship::Params::PitchesParams.new
 
@@ -157,6 +161,9 @@ module Musial
 
       File.write("../web/songs/#{game.slug}_song.json", Oj.dump(tone_js, mode: :compat))
     end
+
+
+    File.write("../web/songs/playlist.json", Oj.dump({ songs: playlist }, mode: :compat))
 
     true
 
