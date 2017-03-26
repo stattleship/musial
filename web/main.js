@@ -16,7 +16,7 @@ function main()  {
 
 function loadInstruments() {
   let instrumentNames = [
-    'celesta',
+    'voice_oohs',
   ]
   let instrumentPromises = []
   let ac = Tone.context
@@ -38,11 +38,24 @@ function loadInstruments() {
 
 function loadScore() {
   //let score = genScore()
-  let songUrl = 'songs/mlb-2016-chc-cle-2016-11-1-0400_song.json'
+  let songParam = getParameterByName('song') || 'mlb-2016-la-chc-2016-10-22-0300'
+  let songUrl = `songs/${songParam}_song.json`
   let scorePromise = fetch(songUrl).then((response) => {
     return response.json()
   })
   return scorePromise
+}
+
+function getParameterByName(name, url) {
+    if (!url) {
+      url = window.location.href;
+    }
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }
 
 class MusialGui {

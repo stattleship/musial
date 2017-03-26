@@ -109,7 +109,7 @@ module Musial
                       when 'SC'
                         'quarter'
                       when 'SI'
-                        'half'
+                        'eighth'
                       when 'SL'
                         'eighth'
                       when 'SP'
